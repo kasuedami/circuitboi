@@ -1,5 +1,4 @@
-use bevy::prelude::{ResMut, Plugin, App, Resource, SystemSet};
-use bevy_egui::{egui, EguiContext};
+use bevy::prelude::{Plugin, App, Resource, SystemSet};
 
 mod run_criteria;
 mod panel;
@@ -10,6 +9,7 @@ pub struct UiPlugin {
 }
 
 impl UiPlugin {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         Self::default()
     }
@@ -25,21 +25,25 @@ impl UiPlugin {
         }
     }
 
+    #[allow(dead_code)]
     pub fn left(mut self) -> Self {
         self.panels.left = true;
         self
     }
 
+    #[allow(dead_code)]
     pub fn right(mut self) -> Self {
         self.panels.right = true;
         self
     }
 
+    #[allow(dead_code)]
     pub fn top(mut self) -> Self {
         self.panels.top = true;
         self
     }
 
+    #[allow(dead_code)]
     pub fn bottom(mut self) -> Self {
         self.panels.bottom = true;
         self

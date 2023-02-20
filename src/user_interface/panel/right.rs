@@ -11,7 +11,7 @@ pub(in crate::user_interface) fn system(
         .resizable(true)
         .show(egui_context.ctx_mut(), |ui| {
             ui.heading("Inputs");
-            ui.allocate_rect(half_height_available_rect_before_wrap(&ui), egui::Sense::hover());
+            ui.allocate_rect(half_height_available_rect_before_wrap(ui), egui::Sense::hover());
             ui.separator();
             ui.heading("Outputs");
         //    ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
