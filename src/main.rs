@@ -1,17 +1,13 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext, EguiPlugin};
+use bevy_egui::EguiPlugin;
+
+mod user_interface;
 
 fn main() {
 
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
-        .add_system(ui_example_system)
+        .add_plugin(user_interface::UiPlugin::all())
         .run();
-}
-
-fn ui_example_system(mut egui_context: ResMut<EguiContext>) {
-    egui::Window::new("Hello").show(egui_context.ctx_mut(), |ui| {
-        ui.label("world");
-    });
 }
