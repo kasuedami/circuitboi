@@ -2,6 +2,7 @@ use bevy::prelude::{ResMut, Plugin, App, Resource, SystemSet};
 use bevy_egui::{egui, EguiContext};
 
 mod run_criteria;
+mod panel;
 
 #[derive(Default)]
 pub struct UiPlugin {
@@ -52,25 +53,27 @@ impl Plugin for UiPlugin {
             .add_system_set(
                 SystemSet::new()
                     .with_run_criteria(run_criteria::show_left_panel)
-                    .with_system(left_panel_system)
+                    .with_system(panel::left::system)
             )
             .add_system_set(
                 SystemSet::new()
                     .with_run_criteria(run_criteria::show_right_panel)
-                    .with_system(right_panel_system)
-                    .after(left_panel_system)
+                    .with_system(panel::right::system)
+                    .after(panel::left::system)
             )
             .add_system_set(
                 SystemSet::new()
                     .with_run_criteria(run_criteria::show_top_panel)
-                    .with_system(top_panel_system)
-                    .after(right_panel_system)
+                    .with_system(panel::top::system)
+                    .before(panel::left::system)
+                    .before(panel::right::system)
             )
             .add_system_set(
                 SystemSet::new()
                     .with_run_criteria(run_criteria::show_bottom_panel)
-                    .with_system(bottom_panel_system)
-                    .after(top_panel_system)
+                    .with_system(panel::bottom::system)
+                    .after(panel::left::system)
+                    .after(panel::right::system)
             );
     }
 }
@@ -89,62 +92,4 @@ struct ShowPanels {
     right: bool,
     top: bool,
     bottom: bool,
-}
-
-fn left_panel_system(
-    mut egui_context: ResMut<EguiContext>,
-    mut occupied_screen_space: ResMut<OccupiedScreenSpace>,
-) {
-    occupied_screen_space.left = egui::SidePanel::left("left_panel")
-        .resizable(true)
-        .show(egui_context.ctx_mut(), |ui| {
-            ui.heading("Elements");
-            ui.separator();
-            ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
-        })
-        .response
-        .rect
-        .width();
-}
-
-fn right_panel_system(
-    mut egui_context: ResMut<EguiContext>,
-    mut occupied_screen_space: ResMut<OccupiedScreenSpace>,
-) {
-    occupied_screen_space.right = egui::SidePanel::right("right_panel")
-        .resizable(true)
-        .show(egui_context.ctx_mut(), |ui| {
-            ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
-        })
-        .response
-        .rect
-        .width();
-}
-
-fn top_panel_system(
-    mut egui_context: ResMut<EguiContext>,
-    mut occupied_screen_space: ResMut<OccupiedScreenSpace>,
-) {
-    occupied_screen_space.top = egui::TopBottomPanel::top("top_panel")
-        .resizable(true)
-        .show(egui_context.ctx_mut(), |ui| {
-            ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
-        })
-        .response
-        .rect
-        .width();
-}
-
-fn bottom_panel_system(
-    mut egui_context: ResMut<EguiContext>,
-    mut occupied_screen_space: ResMut<OccupiedScreenSpace>,
-) {
-    occupied_screen_space.bottom = egui::TopBottomPanel::bottom("bottom_panel")
-        .resizable(true)
-        .show(egui_context.ctx_mut(), |ui| {
-            ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
-        })
-        .response
-        .rect
-        .width();
 }
