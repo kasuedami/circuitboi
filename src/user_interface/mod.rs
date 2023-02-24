@@ -1,7 +1,10 @@
 use bevy::prelude::{Plugin, App, Resource, SystemSet};
 
-mod run_criteria;
+use self::popup::PopupPlugin;
+
 mod panel;
+pub mod popup;
+mod run_criteria;
 
 #[derive(Default)]
 pub struct UiPlugin {
@@ -54,6 +57,7 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<OccupiedScreenSpace>()
             .insert_resource(self.panels.clone())
+            .add_plugin(PopupPlugin)
             .add_system_set(
                 SystemSet::new()
                     .with_run_criteria(run_criteria::show_left_panel)

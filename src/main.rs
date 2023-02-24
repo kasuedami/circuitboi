@@ -3,7 +3,7 @@ use bevy_egui::EguiPlugin;
 
 mod editor;
 pub mod logic;
-mod user_interface;
+pub mod user_interface;
 
 #[cfg(test)]
 mod tests;
