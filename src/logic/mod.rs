@@ -1,6 +1,9 @@
+use core::fmt;
 use std::ops::{BitAnd, BitOr, Not, Add};
 
-#[derive(Default, PartialEq, Eq)]
+pub mod equation;
+
+#[derive(Default, Clone, Copy, PartialEq, Eq)]
 pub enum Signal {
     Binary(Binary),
     #[default]
@@ -54,7 +57,7 @@ impl Add for Signal {
     }
 }
 
-#[derive(Default, PartialEq, Eq)]
+#[derive(Default, Clone, Copy, PartialEq, Eq)]
 pub enum Binary {
     #[default]
     Low,
@@ -90,6 +93,15 @@ impl BitOr for Binary {
         match (self, rhs) {
             (Self::Low, Self::Low) => Self::Low,
             _ => Self::High,
+        }
+    }
+}
+
+impl fmt::Display for Binary {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Binary::High => write!(f, "High"),
+            Binary::Low => write!(f, "Low"),
         }
     }
 }

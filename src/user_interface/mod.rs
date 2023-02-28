@@ -1,9 +1,9 @@
 use bevy::prelude::{Plugin, App, Resource, SystemSet};
 
-use self::popup::PopupPlugin;
+use self::equation_solver::EquationSolverPlugin;
 
 mod panel;
-pub mod popup;
+pub mod equation_solver;
 mod run_criteria;
 
 #[derive(Default)]
@@ -57,7 +57,7 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<OccupiedScreenSpace>()
             .insert_resource(self.panels.clone())
-            .add_plugin(PopupPlugin)
+            .add_plugin(EquationSolverPlugin)
             .add_system_set(
                 SystemSet::new()
                     .with_run_criteria(run_criteria::show_left_panel)

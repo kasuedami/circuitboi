@@ -1,13 +1,13 @@
 use bevy::prelude::ResMut;
 use bevy_egui::{EguiContext, egui};
 
-use crate::{user_interface::{OccupiedScreenSpace, popup::{PopupState, PopupWindow}}, editor::{state::EditorState}};
+use crate::{user_interface::{OccupiedScreenSpace, equation_solver::EquationSolverOpen}, editor::{state::EditorState}};
 
 pub(in crate::user_interface) fn system(
     mut egui_context: ResMut<EguiContext>,
     mut occupied_screen_space: ResMut<OccupiedScreenSpace>,
     mut editor_state: ResMut<EditorState>,
-    mut popup_state: ResMut<PopupState>,
+    mut equation_solver_state: ResMut<EquationSolverOpen>,
 ) {
     occupied_screen_space.top = egui::TopBottomPanel::top("top_panel")
         .show(egui_context.ctx_mut(), |ui| {
@@ -25,7 +25,7 @@ pub(in crate::user_interface) fn system(
                 });
                 ui.menu_button("Logic", |ui| {
                     if ui.button("Solve equation").clicked() {
-                        popup_state.show(PopupWindow::EquationSolver);
+                        equation_solver_state.open();
                     }
                 });
             });
