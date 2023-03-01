@@ -1,19 +1,57 @@
+use std::ops::BitAnd;
+
 use super::Binary;
 
-#[derive(Default)]
-pub struct Equation {
-
+pub trait Solution {
+    fn solution(&self) -> Binary;
 }
 
-impl Equation {
+type Operation = fn(Binary, Binary) -> Binary;
 
-    pub fn solve(&self) -> Option<Binary> {
-        Some(Binary::High)
+pub struct Equation {
+    left: EquationPart,
+    operation: Operation,
+    right: EquationPart,
+}
+
+impl TryFrom<String> for Equation {
+    type Error = ();
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Err(())
     }
 }
 
-impl From<String> for Equation {
-    fn from(value: String) -> Self {
-        Self::default()
+impl Default for Equation {
+    fn default() -> Self {
+        Self {
+            left: Default::default(),
+            operation: Binary::bitand,
+            right: Default::default()
+        }
+    }
+}
+
+impl Solution for Equation {
+    fn solution(&self) -> Binary {
+        (self.operation)(self.left.solution(), self.right.solution())
+    }
+}
+
+pub enum EquationPart {
+    Binary(Binary),
+    Equation(Box<Equation>),
+    Inverse(Box<EquationPart>),
+}
+
+impl Default for EquationPart {
+    fn default() -> Self {
+        Self::Binary(Binary::High)
+    }
+}
+
+impl Solution for EquationPart {
+    fn solution(&self) -> Binary {
+        Binary::High
     }
 }

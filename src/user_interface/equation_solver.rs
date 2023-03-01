@@ -1,7 +1,7 @@
 use bevy::prelude::{Plugin, Resource, ResMut, Res, SystemSet};
 use bevy_egui::{EguiContext, egui::{self, Align2}};
 
-use crate::logic::{Binary, equation::Equation};
+use crate::logic::{Binary, equation::{Equation, Solution}};
 
 pub struct EquationSolverPlugin;
 
@@ -42,8 +42,12 @@ impl EquationSolverState {
     }
 
     pub fn try_solve(&mut self) {
-        self.equation = Equation::from(self.equation_string.clone());
-        self.solution = self.equation.solve();
+        if let Ok(equation) = Equation::try_from(self.equation_string.clone()) {
+            self.equation = equation;
+            self.solution = Some(self.equation.solution());
+        } else {
+            self.solution = None;
+        }
     }
 
     pub fn is_solved(&self) -> bool {
