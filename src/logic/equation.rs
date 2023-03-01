@@ -52,6 +52,11 @@ impl Default for EquationPart {
 
 impl Solution for EquationPart {
     fn solution(&self) -> Binary {
-        Binary::High
+        match self {
+            EquationPart::Binary(binary) => *binary,
+            EquationPart::Equation(equation) => equation.solution(),
+            EquationPart::Inverse(to_inverse) => !to_inverse.solution(),
+
+        }
     }
 }
