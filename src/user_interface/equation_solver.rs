@@ -1,7 +1,7 @@
 use bevy::prelude::{Plugin, Resource, ResMut, Res, SystemSet};
 use bevy_egui::{EguiContext, egui::{self, Align2}};
 
-use crate::logic::{Binary, equation::{Equation, Solution}};
+use crate::logic::{Binary, equation::{Solution, Equation}};
 
 pub struct EquationSolverPlugin;
 

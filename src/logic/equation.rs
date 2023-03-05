@@ -1,5 +1,5 @@
 use std::{ops::{BitAnd, BitOr}, fmt::Debug};
-use nom::{bytes::complete::tag, IResult, combinator::value, branch::alt, sequence::tuple};
+use nom::{bytes::complete::{tag, take_while}, IResult, combinator::{value, map_res}, branch::alt, sequence::tuple, multi::many0, character::complete::one_of};
 
 use super::Binary;
 
@@ -9,13 +9,13 @@ pub trait Solution {
 
 type Operation = fn(Binary, Binary) -> Binary;
 
-pub struct Equation {
-    left: EquationPart,
+pub struct SubEquation {
+    left: Equation,
     operation: Operation,
-    right: EquationPart,
+    right: Equation,
 }
 
-impl Debug for Equation {
+impl Debug for SubEquation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 
         let value = if self.operation == Binary::bitand {
@@ -26,7 +26,6 @@ impl Debug for Equation {
             "shit".to_string()
         };
 
-
         f.debug_struct("Equation")
             .field("left", &self.left)
             .field("operation", &value)
@@ -35,75 +34,7 @@ impl Debug for Equation {
     }
 }
 
-impl TryFrom<String> for Equation {
-    type Error = ();
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        let parsed = parse_equation(&value);
-        
-        match parsed {
-            Ok(result) if result.0.is_empty() => {
-                dbg!(&result.1);
-                Ok(result.1)
-            },
-            _ => Err(())
-        }
-    }
-}
-
-fn parse_equation(input: &str) -> IResult<&str, Equation> {
-    let (input, left) = parse_binary(&input)?;
-    let (input, operation) = pasre_operation(&input)?;
-    let (input, right) = parse_equation_part(&input)?;
-    
-    Ok((input, Equation {
-        left: EquationPart::Binary(left),
-        operation,
-        right
-    }))
-}
-
-fn parse_equation_part(input: &str) -> IResult<&str, EquationPart> {
-    let (input, first) = parse_binary(input)?;
-
-    if input.is_empty() {
-        Ok((input, EquationPart::Binary(first)))
-    } else {
-
-        let result = tuple((pasre_operation, parse_equation_part))(input);
-
-        match result {
-            Ok((input, (operation, right))) => {
-                Ok((input, EquationPart::Equation(
-                    Box::new(Equation {
-                        left: EquationPart::Binary(first),
-                        operation,
-                        right
-                    })
-                )))
-            },
-            Err(err) => {
-                Err(err)
-            }
-        }
-    }
-}
-
-fn parse_binary(input: &str) -> IResult<&str, Binary> {
-    let parse_high = value(Binary::High, tag("1"));
-    let parse_low = value(Binary::Low, tag("0"));
-
-    alt((parse_high, parse_low))(input)
-}
-
-fn pasre_operation(input: &str) -> IResult<&str, Operation> {
-    let parse_and = value(Binary::bitand as Operation, tag("&"));
-    let parse_or = value(Binary::bitor as Operation, tag("|"));
-
-    alt((parse_and, parse_or))(input)
-}
-
-impl Default for Equation {
+impl Default for SubEquation {
     fn default() -> Self {
         Self {
             left: Default::default(),
@@ -113,32 +44,91 @@ impl Default for Equation {
     }
 }
 
-impl Solution for Equation {
+impl Solution for SubEquation {
     fn solution(&self) -> Binary {
         (self.operation)(self.left.solution(), self.right.solution())
     }
 }
 
 #[derive(Debug)]
-pub enum EquationPart {
+pub enum Equation {
     Binary(Binary),
-    Equation(Box<Equation>),
-    Inverse(Box<EquationPart>),
+    Equation(Box<SubEquation>),
+    Inverse(Box<Equation>),
 }
 
-impl Default for EquationPart {
+impl Default for Equation {
     fn default() -> Self {
         Self::Binary(Binary::High)
     }
 }
 
-impl Solution for EquationPart {
+impl Solution for Equation {
     fn solution(&self) -> Binary {
         match self {
-            EquationPart::Binary(binary) => *binary,
-            EquationPart::Equation(equation) => equation.solution(),
-            EquationPart::Inverse(to_inverse) => !to_inverse.solution(),
+            Equation::Binary(binary) => *binary,
+            Equation::Equation(equation) => equation.solution(),
+            Equation::Inverse(to_inverse) => !to_inverse.solution(),
 
         }
     }
+}
+
+impl TryFrom<String> for Equation {
+    type Error = ();
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        let parsed = parse_equation(&value);
+
+        match parsed {
+            Ok((remaining, equation)) if remaining.is_empty() => Ok(equation),
+            _ => Err(())
+        }
+    }
+}
+
+
+fn parse_equation(input: &str) -> IResult<&str, Equation> {
+
+    let (input, first) = parse_binary(input)?;
+    let (input, parts) = many0(equation_right_side)(input)?;
+
+    if parts.is_empty() {
+        Ok((input, first))
+    } else {
+        let mut total = first;
+
+        for (operation, binary) in parts {
+            total = Equation::Equation(Box::new(
+                SubEquation {
+                    left: total,
+                    operation,
+                    right: binary,
+                }
+            ))
+        }
+        
+        Ok((input, total))
+    }
+}
+
+
+fn parse_binary(input: &str) -> IResult<&str, Equation> {
+    let parse_high = value(Binary::High, tag("1"));
+    let parse_low = value(Binary::Low, tag("0"));
+
+    map_res(alt((parse_high, parse_low)), |binary| Ok::<Equation, ()>(Equation::Binary(binary)))(input)
+}
+
+fn pasre_operation(input: &str) -> IResult<&str, Operation> {
+    let parse_and = value(Binary::bitand as Operation, tag("&"));
+    let parse_or = value(Binary::bitor as Operation, tag("|"));
+
+    alt((parse_and, parse_or))(input)
+}
+
+fn equation_right_side(input: &str) -> IResult<&str, (Operation, Equation)> {
+    let mut operation_before_binary = tuple((pasre_operation, parse_binary));
+    
+    operation_before_binary(input)
 }
