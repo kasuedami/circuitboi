@@ -1,5 +1,5 @@
 use std::{ops::{BitAnd, BitOr}, fmt::Debug};
-use nom::{bytes::complete::{tag, take_while}, IResult, combinator::{value, map_res}, branch::alt, sequence::tuple, multi::many0, character::complete::one_of};
+use nom::{bytes::complete::tag, IResult, combinator::{value, map_res}, branch::alt, sequence::tuple, multi::many0};
 
 use super::Binary;
 
